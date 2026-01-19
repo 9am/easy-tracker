@@ -1,0 +1,13 @@
+node_modules/
+.env
+*.db
+*.db-journal
+prisma/migrations/
+.vercel
+.DS_Store
+coverage/
+dist/
+pnpm-debug.log*
+.claude/
+requirement.md
+claude.md

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Workout - Easy Tracker</title>
+</head>
+<body>
+  <div class="container page">
+    <header class="flex justify-between items-center mb-6">
+      <h1>Workout</h1>
+      <button class="btn btn-primary btn-sm" id="add-routine-btn">+ Routine</button>
+    </header>
+
+    <div id="routines-container">
+      <div class="text-center p-4">
+        <div class="spinner" style="margin: 0 auto;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Routine Modal -->
+  <div class="modal-overlay hidden" id="routine-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="routine-modal-title">Add Routine</h3>
+        <button class="modal-close" id="close-routine-modal">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form id="routine-form">
+          <div class="form-group">
+            <label class="form-label" for="routine-name">Name</label>
+            <input type="text" class="form-input" id="routine-name" required>
+          </div>
+          <button type="submit" class="btn btn-primary btn-block">Save</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Exercise Modal -->
+  <div class="modal-overlay hidden" id="exercise-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="exercise-modal-title">Add Exercise</h3>
+        <button class="modal-close" id="close-exercise-modal">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="stats-tabs mb-4">
+          <button class="stats-tab active" data-tab="predefined">Predefined</button>
+          <button class="stats-tab" data-tab="custom">Custom</button>
+        </div>
+
+        <div id="predefined-tab">
+          <div id="muscle-groups-list"></div>
+        </div>
+
+        <div id="custom-tab" class="hidden">
+          <form id="custom-exercise-form">
+            <div class="form-group">
+              <label class="form-label" for="custom-exercise-name">Exercise Name</label>
+              <input type="text" class="form-input" id="custom-exercise-name" required>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block">Add</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="../js/workout.js"></script>
+</body>
+</html>
