@@ -7,7 +7,7 @@
     "dev": "concurrently \"pnpm run dev:server\" \"pnpm run dev:client\"",
     "dev:server": "node server/dev.js",
     "dev:client": "vite client --port 5173",
-    "build": "pnpm run build:client && prisma generate",
+    "build": "pnpm run build:client && prisma generate && prisma db push",
     "build:client": "vite build client",
     "preview": "vite preview client",
     "db:generate": "prisma generate",

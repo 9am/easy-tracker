@@ -1,5 +1,6 @@
 node_modules/
 .env
+*.swp
 *.db
 *.db-journal
 prisma/migrations/
