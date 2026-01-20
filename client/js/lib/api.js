@@ -54,15 +54,15 @@ async function request(endpoint, options = {}) {
 // Auth
 export const auth = {
   login() {
-    window.location.href = '/api/auth/google';
+    window.location.href = '/api/auth?action=google';
   },
 
   async devLogin() {
-    return request('/auth/dev', { method: 'POST' });
+    return request('/auth?action=dev', { method: 'POST' });
   },
 
   async logout() {
-    return request('/auth/logout', { method: 'POST' });
+    return request('/auth?action=logout', { method: 'POST' });
   },
 
   async me() {
@@ -158,26 +158,25 @@ export const sets = {
 // Stats
 export const stats = {
   async general(date) {
-    const params = date ? `?date=${date}` : '';
-    return request(`/stats/general${params}`);
+    const params = new URLSearchParams({ type: 'general' });
+    if (date) params.set('date', date);
+    return request(`/stats?${params.toString()}`);
   },
 
   async calendar(year, month) {
-    const params = new URLSearchParams();
+    const params = new URLSearchParams({ type: 'calendar' });
     if (year) params.set('year', year);
     if (month) params.set('month', month);
-    const query = params.toString();
-    return request(`/stats/calendar${query ? `?${query}` : ''}`);
+    return request(`/stats?${params.toString()}`);
   },
 
   async trends(options = {}) {
-    const params = new URLSearchParams();
+    const params = new URLSearchParams({ type: 'trends' });
     if (options.granularity) params.set('granularity', options.granularity);
     if (options.exerciseIds) params.set('exerciseIds', options.exerciseIds.join(','));
     if (options.routineId) params.set('routineId', options.routineId);
     if (options.days) params.set('days', options.days);
-    const query = params.toString();
-    return request(`/stats/trends${query ? `?${query}` : ''}`);
+    return request(`/stats?${params.toString()}`);
   }
 };
 
