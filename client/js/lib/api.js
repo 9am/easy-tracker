@@ -174,6 +174,7 @@ export const stats = {
     const params = new URLSearchParams();
     if (options.granularity) params.set('granularity', options.granularity);
     if (options.exerciseIds) params.set('exerciseIds', options.exerciseIds.join(','));
+    if (options.routineId) params.set('routineId', options.routineId);
     if (options.days) params.set('days', options.days);
     const query = params.toString();
     return request(`/stats/trends${query ? `?${query}` : ''}`);

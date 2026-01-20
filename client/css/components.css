@@ -49,7 +49,7 @@
   height: var(--fab-size);
   border-radius: var(--radius-full);
   background: var(--color-primary);
-  color: white;
+  color: var(--color-primary-text);
   border: none;
   cursor: pointer;
   display: flex;
@@ -167,7 +167,7 @@
   padding-left: var(--space-6);
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: var(--space-2);
   cursor: pointer;
   font-size: var(--font-size-sm);
 }
@@ -183,6 +183,7 @@
 .fab-exercise-muscle {
   font-size: var(--font-size-xs);
   color: var(--color-text-muted);
+  margin-left: auto;
 }
 
 /* Quick Add Buttons */
@@ -200,6 +201,9 @@
 .quick-add-exercise {
   font-weight: 500;
   margin-bottom: var(--space-2);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
 }
 
 .quick-add-last {
@@ -536,6 +540,55 @@
 .calendar-day.intensity-3 { background: #22c55e; color: white; }
 .calendar-day.intensity-4 { background: #15803d; color: white; }
 
+/* Day Detail Modal */
+.day-detail-summary {
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--color-border);
+  margin-bottom: var(--space-3);
+}
+
+.day-detail-routine {
+  margin-bottom: var(--space-4);
+}
+
+.day-detail-routine:last-child {
+  margin-bottom: 0;
+}
+
+.day-detail-routine-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--color-border);
+  margin-bottom: var(--space-2);
+}
+
+.day-detail-exercise {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-2) 0;
+}
+
+.day-detail-exercise-name {
+  font-size: var(--font-size-sm);
+}
+
+.day-detail-exercise-muscle {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}
+
+.day-detail-exercise-stats {
+  text-align: right;
+  font-size: var(--font-size-sm);
+}
+
+.day-detail-exercise-stats span {
+  display: block;
+}
+
 /* Chart */
 .chart-container {
   background: var(--color-surface);
@@ -571,8 +624,53 @@
 
 .chart-control.active {
   background: var(--color-primary);
-  color: white;
+  color: var(--color-primary-text);
   border-color: var(--color-primary);
+}
+
+.chart-routine-selector {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--color-border);
+  margin-bottom: var(--space-3);
+}
+
+.chart-radio {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+}
+
+.chart-radio input {
+  margin: 0;
+}
+
+.chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  padding-top: var(--space-3);
+}
+
+.chart-legend-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--font-size-xs);
+}
+
+.chart-legend-color {
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+}
+
+.chart-legend-label {
+  color: var(--color-text-muted);
 }
 
 .chart-svg {
@@ -700,4 +798,34 @@
   background: rgba(0, 0, 0, 0.3);
   z-index: 54;
   animation: fadeIn 150ms ease;
+}
+
+/* Exercise Icons */
+.exercise-icon {
+  width: 1.25rem;
+  height: 1.25rem;
+  flex-shrink: 0;
+  color: var(--color-text-muted);
+}
+
+.exercise-icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.exercise-item .exercise-info {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.fab-exercise .exercise-icon {
+  width: 1rem;
+  height: 1rem;
+}
+
+.predefined-exercise {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
 }

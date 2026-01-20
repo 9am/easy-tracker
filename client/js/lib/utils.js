@@ -101,6 +101,37 @@ export function createElement(tag, attrs = {}, children = []) {
   return el;
 }
 
+// Confirm popover
+export function confirm(message) {
+  return new Promise((resolve) => {
+    const overlay = document.createElement('div');
+    overlay.className = 'confirm-overlay';
+    overlay.innerHTML = `
+      <div class="confirm-popover">
+        <div class="confirm-message">${message}</div>
+        <div class="confirm-actions">
+          <button class="btn btn-secondary" data-action="cancel">Cancel</button>
+          <button class="btn btn-primary" data-action="confirm">Confirm</button>
+        </div>
+      </div>
+    `;
+
+    const close = (result) => {
+      overlay.remove();
+      resolve(result);
+    };
+
+    overlay.querySelector('[data-action="cancel"]').onclick = () => close(false);
+    overlay.querySelector('[data-action="confirm"]').onclick = () => close(true);
+    overlay.onclick = (e) => {
+      if (e.target === overlay) close(false);
+    };
+
+    document.body.appendChild(overlay);
+    overlay.querySelector('[data-action="confirm"]').focus();
+  });
+}
+
 // SVG Icons
 export const icons = {
   plus: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>`,
@@ -126,4 +157,57 @@ export const icons = {
   logout: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>`
 };
 
-export default { toast, formatDate, formatRelativeTime, debounce, getExerciseName, getMuscleGroup, createElement, icons };
+// Exercise icons - simple gesture representations
+export const exerciseIcons = {
+  // Chest
+  'Push-ups': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="18" x2="20" y2="18"/><path d="M6 14 L12 10 L18 14"/><circle cx="12" cy="7" r="2"/></svg>`,
+  'Bench Press': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="2" y1="12" x2="22" y2="12"/><line x1="4" y1="8" x2="4" y2="16"/><line x1="20" y1="8" x2="20" y2="16"/><ellipse cx="12" cy="12" rx="4" ry="2"/></svg>`,
+  'Chest Fly': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="2"/><path d="M4 14 Q8 10 12 12 Q16 10 20 14"/><line x1="4" y1="14" x2="4" y2="18"/><line x1="20" y1="14" x2="20" y2="18"/></svg>`,
+  'Incline Press': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="2" y1="16" x2="22" y2="10"/><line x1="4" y1="12" x2="4" y2="20"/><line x1="20" y1="6" x2="20" y2="14"/><ellipse cx="12" cy="13" rx="3" ry="1.5"/></svg>`,
+
+  // Back
+  'Pull-ups': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="4" x2="20" y2="4"/><circle cx="12" cy="9" r="2"/><line x1="12" y1="11" x2="12" y2="16"/><path d="M8 4 L8 7 M16 4 L16 7"/><path d="M9 16 L12 20 L15 16"/></svg>`,
+  'Rows': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="10" r="2"/><line x1="8" y1="12" x2="8" y2="18"/><path d="M6 18 L10 18"/><line x1="10" y1="12" x2="18" y2="12"/><line x1="18" y1="10" x2="18" y2="14"/></svg>`,
+  'Lat Pulldown': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="4" x2="20" y2="4"/><circle cx="12" cy="10" r="2"/><path d="M4 4 L8 12 M20 4 L16 12"/><line x1="12" y1="12" x2="12" y2="18"/></svg>`,
+  'Deadlift': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="6" r="2"/><line x1="12" y1="8" x2="12" y2="14"/><path d="M9 14 L9 20 M15 14 L15 20"/><line x1="6" y1="20" x2="18" y2="20"/><circle cx="6" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/></svg>`,
+
+  // Shoulders
+  'Overhead Press': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="10" r="2"/><line x1="12" y1="12" x2="12" y2="18"/><path d="M6 6 L12 4 L18 6"/><line x1="6" y1="4" x2="6" y2="8"/><line x1="18" y1="4" x2="18" y2="8"/></svg>`,
+  'Lateral Raise': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="2"/><line x1="12" y1="10" x2="12" y2="18"/><line x1="12" y1="12" x2="4" y2="10"/><line x1="12" y1="12" x2="20" y2="10"/><circle cx="4" cy="10" r="1"/><circle cx="20" cy="10" r="1"/></svg>`,
+  'Front Raise': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="10" r="2"/><line x1="12" y1="12" x2="12" y2="20"/><line x1="10" y1="12" x2="6" y2="6"/><line x1="14" y1="12" x2="18" y2="6"/><circle cx="6" cy="6" r="1"/><circle cx="18" cy="6" r="1"/></svg>`,
+  'Shrugs': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="2"/><line x1="12" y1="10" x2="12" y2="16"/><path d="M8 10 Q8 6 12 6 Q16 6 16 10"/><line x1="8" y1="10" x2="8" y2="18"/><line x1="16" y1="10" x2="16" y2="18"/></svg>`,
+
+  // Arms
+  'Bicep Curl': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 18 L8 12 Q8 8 12 8"/><circle cx="12" cy="6" r="1.5"/><line x1="8" y1="18" x2="8" y2="20"/><circle cx="8" cy="20" r="1"/></svg>`,
+  'Tricep Dip': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="8" x2="20" y2="8"/><circle cx="12" cy="12" r="2"/><path d="M8 8 L8 12 M16 8 L16 12"/><line x1="12" y1="14" x2="12" y2="18"/><path d="M10 18 L14 18"/></svg>`,
+  'Hammer Curl': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 18 L10 12 L10 8"/><rect x="8" y="6" width="4" height="3" rx="1"/><line x1="10" y1="18" x2="10" y2="20"/></svg>`,
+  'Skull Crusher': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="14" x2="20" y2="14"/><circle cx="12" cy="10" r="2"/><path d="M8 14 L6 8 M16 14 L18 8"/><circle cx="6" cy="8" r="1"/><circle cx="18" cy="8" r="1"/></svg>`,
+
+  // Core
+  'Plank': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="14" x2="18" y2="14"/><circle cx="18" cy="12" r="2"/><line x1="4" y1="14" x2="4" y2="18"/><line x1="8" y1="14" x2="8" y2="18"/></svg>`,
+  'Crunches': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 18 Q8 14 12 14"/><circle cx="14" cy="12" r="2"/><path d="M12 14 L8 18"/><line x1="4" y1="18" x2="8" y2="18"/></svg>`,
+  'Leg Raise': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="16" x2="12" y2="16"/><circle cx="4" cy="14" r="2"/><path d="M12 16 L18 8"/><line x1="18" y1="8" x2="20" y2="8"/></svg>`,
+  'Russian Twist': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="2"/><path d="M8 18 L12 12 L16 18"/><path d="M8 12 L16 12" stroke-dasharray="2 2"/><circle cx="6" cy="12" r="1"/><circle cx="18" cy="12" r="1"/></svg>`,
+
+  // Legs
+  'Squats': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="6" r="2"/><line x1="12" y1="8" x2="12" y2="12"/><path d="M8 12 L8 16 L10 20 M16 12 L16 16 L14 20"/><line x1="8" y1="12" x2="16" y2="12"/></svg>`,
+  'Lunges': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="10" cy="6" r="2"/><line x1="10" y1="8" x2="10" y2="12"/><path d="M10 12 L6 18 L6 20"/><path d="M10 12 L16 16 L18 20"/></svg>`,
+  'Leg Press': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="6" cy="12" r="2"/><path d="M8 12 L12 12 L16 8"/><line x1="16" y1="8" x2="20" y2="8"/><line x1="20" y1="6" x2="20" y2="10"/><path d="M6 14 L6 18"/></svg>`,
+  'Calf Raise': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="6" r="2"/><line x1="12" y1="8" x2="12" y2="14"/><line x1="10" y1="14" x2="14" y2="14"/><path d="M10 14 L10 18 L10 20 M14 14 L14 18 L14 20"/><line x1="8" y1="20" x2="16" y2="20"/></svg>`,
+
+  // Cardio
+  'Running': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="14" cy="6" r="2"/><path d="M10 10 L14 8 L18 10"/><path d="M14 10 L12 16 L8 20"/><path d="M14 10 L16 14 L20 16"/></svg>`,
+  'Jumping Jacks': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="2"/><line x1="12" y1="7" x2="12" y2="14"/><path d="M12 10 L6 6 M12 10 L18 6"/><path d="M12 14 L8 20 M12 14 L16 20"/></svg>`,
+  'Burpees': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="8" r="2"/><path d="M10 8 L16 8 L16 12 L4 12"/><path d="M4 12 L4 16 M8 12 L8 16"/><path d="M17 6 L20 3 M17 6 L20 9" stroke-dasharray="2 2"/></svg>`,
+  'Mountain Climbers': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="6" cy="10" r="2"/><line x1="8" y1="10" x2="18" y2="14"/><path d="M10 12 L8 18"/><path d="M14 12 L18 8"/><line x1="18" y1="14" x2="18" y2="18"/></svg>`,
+
+  // Default/Custom
+  'default': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="3"/><line x1="12" y1="11" x2="12" y2="16"/><path d="M8 20 L12 16 L16 20"/><path d="M8 13 L16 13"/></svg>`
+};
+
+// Get exercise icon by name
+export function getExerciseIcon(name) {
+  return exerciseIcons[name] || exerciseIcons['default'];
+}
+
+export default { toast, formatDate, formatRelativeTime, debounce, getExerciseName, getMuscleGroup, createElement, confirm, icons, exerciseIcons, getExerciseIcon };

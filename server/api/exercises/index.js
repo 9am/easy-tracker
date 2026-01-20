@@ -63,6 +63,24 @@ export default async function handler(req, res) {
       if (!predefined) {
         return res.status(400).json({ error: 'Invalid predefinedExerciseId' });
       }
+
+      // Check for duplicate predefined exercise in same routine
+      const existing = await prisma.exercise.findFirst({
+        where: { routineId, predefinedExerciseId }
+      });
+      if (existing) {
+        return res.status(400).json({ error: 'This exercise already exists in the routine' });
+      }
+    }
+
+    // Check for duplicate custom name in same routine
+    if (customName) {
+      const existing = await prisma.exercise.findFirst({
+        where: { routineId, customName: customName.trim() }
+      });
+      if (existing) {
+        return res.status(400).json({ error: 'An exercise with this name already exists in the routine' });
+      }
     }
 
     // Get max display order if not provided

@@ -33,6 +33,14 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Name is required' });
     }
 
+    // Check for duplicate name
+    const existing = await prisma.routine.findFirst({
+      where: { userId, name: name.trim() }
+    });
+    if (existing) {
+      return res.status(400).json({ error: 'A routine with this name already exists' });
+    }
+
     // Get max display order if not provided
     let order = displayOrder;
     if (order === undefined) {

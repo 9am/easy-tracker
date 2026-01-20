@@ -39,7 +39,16 @@ export default async function handler(req, res) {
     const { name, displayOrder } = req.body;
 
     const updateData = {};
-    if (name !== undefined) updateData.name = name.trim();
+    if (name !== undefined) {
+      // Check for duplicate name (excluding current routine)
+      const existing = await prisma.routine.findFirst({
+        where: { userId, name: name.trim(), id: { not: id } }
+      });
+      if (existing) {
+        return res.status(400).json({ error: 'A routine with this name already exists' });
+      }
+      updateData.name = name.trim();
+    }
     if (displayOrder !== undefined) updateData.displayOrder = displayOrder;
 
     if (Object.keys(updateData).length === 0) {

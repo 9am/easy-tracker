@@ -1,9 +1,72 @@
 import { stats } from '../lib/api.js';
-import { icons } from '../lib/utils.js';
+import { icons, formatDate } from '../lib/utils.js';
 
 const WEEKDAYS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June',
   'July', 'August', 'September', 'October', 'November', 'December'];
+
+async function showDayDetail(date) {
+  try {
+    const data = await stats.general(date);
+
+    const overlay = document.createElement('div');
+    overlay.className = 'modal-overlay';
+    overlay.innerHTML = `
+      <div class="modal">
+        <div class="modal-header">
+          <h3>${formatDate(date, { weekday: 'short', year: 'numeric' })}</h3>
+          <button class="modal-close">${icons.x}</button>
+        </div>
+        <div class="modal-body">
+          ${data.today.totalReps === 0 ? `
+            <div class="empty-state">
+              <p>No activity on this day</p>
+            </div>
+          ` : `
+            <div class="day-detail-summary">
+              <span class="font-medium">${data.today.totalReps} reps</span>
+              <span class="text-muted"> · ${data.today.totalSets} sets</span>
+            </div>
+            <div class="day-detail-routines">
+              ${data.today.routines.map(routine => `
+                <div class="day-detail-routine">
+                  <div class="day-detail-routine-header">
+                    <span class="font-medium">${routine.name}</span>
+                    <span class="text-muted">${routine.totalReps} reps</span>
+                  </div>
+                  <div class="day-detail-exercises">
+                    ${routine.exercises.map(ex => `
+                      <div class="day-detail-exercise">
+                        <div>
+                          <div class="day-detail-exercise-name">${ex.name}</div>
+                          <div class="day-detail-exercise-muscle">${ex.muscleGroup}</div>
+                        </div>
+                        <div class="day-detail-exercise-stats">
+                          <span>${ex.reps} reps</span>
+                          <span class="text-muted">${ex.sets} set${ex.sets !== 1 ? 's' : ''}</span>
+                        </div>
+                      </div>
+                    `).join('')}
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          `}
+        </div>
+      </div>
+    `;
+
+    const close = () => overlay.remove();
+    overlay.querySelector('.modal-close').onclick = close;
+    overlay.onclick = (e) => {
+      if (e.target === overlay) close();
+    };
+
+    document.body.appendChild(overlay);
+  } catch (error) {
+    console.error('Failed to load day details:', error);
+  }
+}
 
 export function createCalendar(container, onDayClick) {
   const now = new Date();
@@ -86,14 +149,12 @@ export function createCalendar(container, onDayClick) {
       daysContainer.innerHTML = html;
 
       // Add click listeners
-      if (onDayClick) {
-        daysContainer.querySelectorAll('.calendar-day:not(.empty)').forEach(el => {
-          el.style.cursor = 'pointer';
-          el.addEventListener('click', () => {
-            onDayClick(el.dataset.date);
-          });
+      daysContainer.querySelectorAll('.calendar-day:not(.empty)').forEach(el => {
+        el.style.cursor = 'pointer';
+        el.addEventListener('click', () => {
+          showDayDetail(el.dataset.date);
         });
-      }
+      });
 
       // Summary
       summaryContainer.innerHTML = `

@@ -14,12 +14,15 @@
   --color-border: #e7e5e4;
   --color-primary: #292524;
   --color-primary-hover: #44403c;
+  --color-primary-text: #ffffff;
   --color-accent: #0369a1;
   --color-accent-light: #e0f2fe;
   --color-success: #15803d;
   --color-success-light: #dcfce7;
+  --color-success-text: #ffffff;
   --color-error: #dc2626;
   --color-error-light: #fee2e2;
+  --color-error-text: #ffffff;
 
   /* Typography */
   --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
@@ -58,6 +61,31 @@
   --radius-lg: 0.75rem;
   --radius-full: 9999px;
   --transition: 150ms ease;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-bg: #1c1917;
+    --color-surface: #292524;
+    --color-text: #fafaf9;
+    --color-text-muted: #a8a29e;
+    --color-border: #44403c;
+    --color-primary: #fafaf9;
+    --color-primary-hover: #e7e5e4;
+    --color-primary-text: #1c1917;
+    --color-accent: #38bdf8;
+    --color-accent-light: #0c4a6e;
+    --color-success: #4ade80;
+    --color-success-light: #14532d;
+    --color-success-text: #1c1917;
+    --color-error: #f87171;
+    --color-error-light: #7f1d1d;
+    --color-error-text: #1c1917;
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+    --shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.4);
+  }
 }
 
 html {
@@ -141,9 +169,14 @@ a:hover {
   cursor: not-allowed;
 }
 
+.btn svg {
+  width: 1em;
+  height: 1em;
+}
+
 .btn-primary {
   background: var(--color-primary);
-  color: white;
+  color: var(--color-primary-text);
 }
 
 .btn-primary:hover:not(:disabled) {
@@ -170,9 +203,14 @@ a:hover {
   color: var(--color-text);
 }
 
+.btn-ghost-danger {
+  background: var(--color-border);
+  color: var(--color-text-muted);
+}
+
 .btn-danger {
   background: var(--color-error);
-  color: white;
+  color: var(--color-error-text);
 }
 
 .btn-danger:hover:not(:disabled) {
@@ -334,10 +372,12 @@ a:hover {
 
 .toast-error {
   background: var(--color-error);
+  color: var(--color-error-text);
 }
 
 .toast-success {
   background: var(--color-success);
+  color: var(--color-success-text);
 }
 
 @keyframes slideIn {
@@ -408,6 +448,44 @@ a:hover {
 
 .modal-close:hover {
   background: var(--color-bg);
+}
+
+/* Confirm Popover */
+.confirm-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: var(--space-4);
+  animation: fadeIn 150ms ease;
+}
+
+.confirm-popover {
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  max-width: 280px;
+  width: 100%;
+  box-shadow: var(--shadow-lg);
+  animation: slideUp 150ms ease;
+}
+
+.confirm-message {
+  font-size: var(--font-size-base);
+  margin-bottom: var(--space-4);
+  text-align: center;
+}
+
+.confirm-actions {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.confirm-actions .btn {
+  flex: 1;
 }
 
 /* Responsive */

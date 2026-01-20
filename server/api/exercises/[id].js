@@ -38,6 +38,7 @@ export default async function handler(req, res) {
     const { predefinedExerciseId, customName, displayOrder, routineId } = req.body;
 
     const updateData = {};
+    const targetRoutineId = routineId || exercise.routineId;
 
     if (predefinedExerciseId !== undefined) {
       if (predefinedExerciseId) {
@@ -47,11 +48,28 @@ export default async function handler(req, res) {
         if (!predefined) {
           return res.status(400).json({ error: 'Invalid predefinedExerciseId' });
         }
+
+        // Check for duplicate predefined exercise in target routine
+        const existing = await prisma.exercise.findFirst({
+          where: { routineId: targetRoutineId, predefinedExerciseId, id: { not: id } }
+        });
+        if (existing) {
+          return res.status(400).json({ error: 'This exercise already exists in the routine' });
+        }
       }
       updateData.predefinedExerciseId = predefinedExerciseId || null;
     }
 
     if (customName !== undefined) {
+      if (customName) {
+        // Check for duplicate custom name in target routine
+        const existing = await prisma.exercise.findFirst({
+          where: { routineId: targetRoutineId, customName: customName.trim(), id: { not: id } }
+        });
+        if (existing) {
+          return res.status(400).json({ error: 'An exercise with this name already exists in the routine' });
+        }
+      }
       updateData.customName = customName?.trim() || null;
     }
 

@@ -1,5 +1,5 @@
 import { routines, sets } from '../lib/api.js';
-import { toast, icons, getExerciseName, getMuscleGroup } from '../lib/utils.js';
+import { toast, icons, getExerciseName, getMuscleGroup, getExerciseIcon } from '../lib/utils.js';
 
 let fabElement = null;
 let panelElement = null;
@@ -135,8 +135,10 @@ function createRoutineTreeItem(routine) {
     for (const exercise of routine.exercises) {
       const exerciseEl = document.createElement('div');
       exerciseEl.className = 'fab-exercise';
+      const exerciseName = getExerciseName(exercise);
       exerciseEl.innerHTML = `
-        <span class="fab-exercise-name">${getExerciseName(exercise)}</span>
+        <span class="exercise-icon">${getExerciseIcon(exerciseName)}</span>
+        <span class="fab-exercise-name">${exerciseName}</span>
         <span class="fab-exercise-muscle">${getMuscleGroup(exercise)}</span>
       `;
       exerciseEl.addEventListener('click', () => selectExercise(exercise));
@@ -191,7 +193,7 @@ function showQuickAdd() {
 
   quickAdd.innerHTML = `
     <div class="quick-add-title">Log set</div>
-    <div class="quick-add-exercise">${exerciseName}</div>
+    <div class="quick-add-exercise"><span class="exercise-icon">${getExerciseIcon(exerciseName)}</span>${exerciseName}</div>
     ${lastReps ? `<div class="quick-add-last">Last: ${lastReps} reps</div>` : ''}
     <div class="quick-add-buttons">
       ${[1, 5, 10, 15, 20].map(n =>

@@ -2,7 +2,7 @@ import '../css/base.css';
 import '../css/components.css';
 import { requireAuth } from './lib/auth.js';
 import { routines, exercises } from './lib/api.js';
-import { toast, icons, getExerciseName, getMuscleGroup } from './lib/utils.js';
+import { toast, icons, getExerciseName, getMuscleGroup, confirm, getExerciseIcon } from './lib/utils.js';
 import { initNav } from './components/nav.js';
 import { initFab, refreshFab } from './components/fab.js';
 
@@ -48,6 +48,11 @@ async function loadPredefinedExercises() {
 function renderRoutines() {
   const container = document.getElementById('routines-container');
 
+  // Save expanded state before re-rendering
+  const expandedIds = new Set(
+    [...container.querySelectorAll('.routine-card.expanded')].map(el => el.dataset.id)
+  );
+
   if (routineData.length === 0) {
     container.innerHTML = `
       <div class="empty-state">
@@ -74,11 +79,14 @@ function renderRoutines() {
       : routine.exercises.map(ex => `
               <div class="exercise-item" data-id="${ex.id}">
                 <div class="exercise-info">
-                  <div class="exercise-name">${getExerciseName(ex)}</div>
-                  <div class="exercise-muscle">${getMuscleGroup(ex)}</div>
+                  <span class="exercise-icon">${getExerciseIcon(getExerciseName(ex))}</span>
+                  <div>
+                    <div class="exercise-name">${getExerciseName(ex)}</div>
+                    <div class="exercise-muscle">${getMuscleGroup(ex)}</div>
+                  </div>
                 </div>
                 <div class="exercise-actions">
-                  <button class="btn btn-ghost btn-sm delete-exercise" data-id="${ex.id}">
+                  <button class="btn btn-ghost-danger btn-sm delete-exercise" data-id="${ex.id}">
                     ${icons.trash}
                   </button>
                 </div>
@@ -89,11 +97,17 @@ function renderRoutines() {
         <div class="routine-actions">
           <button class="btn btn-secondary btn-sm add-exercise-btn" data-routine-id="${routine.id}">+ Exercise</button>
           <button class="btn btn-ghost btn-sm edit-routine-btn" data-id="${routine.id}">${icons.edit}</button>
-          <button class="btn btn-ghost btn-sm delete-routine-btn" data-id="${routine.id}">${icons.trash}</button>
+          <button class="btn btn-ghost-danger btn-sm delete-routine-btn" data-id="${routine.id}">${icons.trash}</button>
         </div>
       </div>
     </div>
   `).join('');
+
+  // Restore expanded state
+  expandedIds.forEach(id => {
+    const card = container.querySelector(`.routine-card[data-id="${id}"]`);
+    if (card) card.classList.add('expanded');
+  });
 
   // Add expand/collapse listeners
   container.querySelectorAll('.routine-header').forEach(header => {
@@ -150,6 +164,7 @@ function renderMuscleGroups() {
       <div class="routine-body">
         ${group.predefinedExercises.map(ex => `
           <div class="exercise-item predefined-exercise" data-id="${ex.id}">
+            <span class="exercise-icon">${getExerciseIcon(ex.name)}</span>
             <span class="exercise-name">${ex.name}</span>
           </div>
         `).join('')}
@@ -204,7 +219,7 @@ function setupEventListeners() {
       await refreshFab();
     } catch (error) {
       console.error('Failed to save routine:', error);
-      toast('Failed to save routine', 'error');
+      toast(error.message || 'Failed to save routine', 'error');
     }
   });
 
@@ -244,7 +259,7 @@ function setupEventListeners() {
       await refreshFab();
     } catch (error) {
       console.error('Failed to add exercise:', error);
-      toast('Failed to add exercise', 'error');
+      toast(error.message || 'Failed to add exercise', 'error');
     }
   });
 }
@@ -291,12 +306,12 @@ async function addPredefinedExercise(predefinedId) {
     await refreshFab();
   } catch (error) {
     console.error('Failed to add exercise:', error);
-    toast('Failed to add exercise', 'error');
+    toast(error.message || 'Failed to add exercise', 'error');
   }
 }
 
 async function deleteRoutine(id) {
-  if (!confirm('Delete this routine and all its exercises?')) return;
+  if (!await confirm('Delete this routine and all its exercises?')) return;
 
   try {
     await routines.delete(id);
@@ -310,7 +325,7 @@ async function deleteRoutine(id) {
 }
 
 async function deleteExercise(id) {
-  if (!confirm('Delete this exercise and all its logged sets?')) return;
+  if (!await confirm('Delete this exercise and all its logged sets?')) return;
 
   try {
     await exercises.delete(id);

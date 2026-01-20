@@ -13,10 +13,16 @@ export default async function handler(req, res) {
   const userId = req.user.id;
 
   // Use provided date or today
-  const targetDate = date ? new Date(date) : new Date();
-  const startOfDay = new Date(targetDate);
-  startOfDay.setHours(0, 0, 0, 0);
-  const endOfDay = new Date(targetDate);
+  // Parse date string as local date to avoid timezone issues
+  let startOfDay;
+  if (date) {
+    const [year, month, day] = date.split('-').map(Number);
+    startOfDay = new Date(year, month - 1, day, 0, 0, 0, 0);
+  } else {
+    startOfDay = new Date();
+    startOfDay.setHours(0, 0, 0, 0);
+  }
+  const endOfDay = new Date(startOfDay);
   endOfDay.setHours(23, 59, 59, 999);
 
   // Yesterday for comparison
@@ -29,7 +35,7 @@ export default async function handler(req, res) {
   const weekAgo = new Date(startOfDay);
   weekAgo.setDate(weekAgo.getDate() - 7);
 
-  // Get today's sets with exercise info
+  // Get today's sets with exercise and routine info
   const todaySets = await prisma.set.findMany({
     where: {
       userId,
@@ -41,6 +47,7 @@ export default async function handler(req, res) {
     include: {
       exercise: {
         include: {
+          routine: true,
           predefinedExercise: {
             include: { muscleGroup: true }
           }
@@ -80,7 +87,44 @@ export default async function handler(req, res) {
   const todayTotalSets = todaySets.length;
   const todayTotalReps = todaySets.reduce((sum, set) => sum + set.reps, 0);
 
-  // Breakdown by exercise
+  // Breakdown by routine and exercise
+  const routineBreakdown = {};
+  for (const set of todaySets) {
+    const routineName = set.exercise.routine?.name || 'Unknown';
+    const routineId = set.exercise.routine?.id || 'unknown';
+    const exerciseName = set.exercise.predefinedExercise?.name || set.exercise.customName;
+
+    if (!routineBreakdown[routineId]) {
+      routineBreakdown[routineId] = {
+        name: routineName,
+        exercises: {},
+        totalSets: 0,
+        totalReps: 0
+      };
+    }
+
+    if (!routineBreakdown[routineId].exercises[exerciseName]) {
+      routineBreakdown[routineId].exercises[exerciseName] = {
+        name: exerciseName,
+        muscleGroup: set.exercise.predefinedExercise?.muscleGroup?.name || 'Custom',
+        sets: 0,
+        reps: 0
+      };
+    }
+
+    routineBreakdown[routineId].exercises[exerciseName].sets++;
+    routineBreakdown[routineId].exercises[exerciseName].reps += set.reps;
+    routineBreakdown[routineId].totalSets++;
+    routineBreakdown[routineId].totalReps += set.reps;
+  }
+
+  // Convert to array format
+  const routines = Object.values(routineBreakdown).map(r => ({
+    ...r,
+    exercises: Object.values(r.exercises)
+  }));
+
+  // Flat exercise breakdown for backward compatibility
   const exerciseBreakdown = {};
   for (const set of todaySets) {
     const name = set.exercise.predefinedExercise?.name || set.exercise.customName;
@@ -106,7 +150,8 @@ export default async function handler(req, res) {
     today: {
       totalSets: todayTotalSets,
       totalReps: todayTotalReps,
-      exercises: Object.values(exerciseBreakdown)
+      exercises: Object.values(exerciseBreakdown),
+      routines
     },
     comparison: {
       yesterday: {

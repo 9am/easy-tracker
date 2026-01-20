@@ -2,7 +2,7 @@ import '../css/base.css';
 import '../css/components.css';
 import { requireAuth, getUser, logout } from './lib/auth.js';
 import { stats } from './lib/api.js';
-import { toast, formatDate } from './lib/utils.js';
+import { toast, formatDate, confirm } from './lib/utils.js';
 import { initNav } from './components/nav.js';
 import { initFab } from './components/fab.js';
 import { createCalendar } from './components/calendar.js';
@@ -25,7 +25,7 @@ async function init() {
 
   // Logout button
   document.getElementById('logout-btn').addEventListener('click', async () => {
-    if (confirm('Log out?')) {
+    if (await confirm('Log out?')) {
       await logout();
     }
   });

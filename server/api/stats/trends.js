@@ -10,7 +10,7 @@ export default async function handler(req, res) {
   if (!isAuthenticated) return;
 
   const userId = req.user.id;
-  const { granularity = 'day', exerciseIds, days = 30 } = req.query;
+  const { granularity = 'day', exerciseIds, routineId, days = 30 } = req.query;
 
   const now = new Date();
   const startDate = new Date(now);
@@ -31,6 +31,11 @@ export default async function handler(req, res) {
     userId,
     loggedAt: { gte: startDate }
   };
+
+  // Filter by specific routine if provided
+  if (routineId) {
+    whereClause.exercise = { routineId };
+  }
 
   // Filter by specific exercises if provided
   if (exerciseIds) {

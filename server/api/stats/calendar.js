@@ -53,12 +53,17 @@ export default async function handler(req, res) {
   const daysInMonth = new Date(year, month, 0).getDate();
   const calendarDays = [];
 
+  // Format date as YYYY-MM-DD in local time (avoid toISOString which uses UTC)
+  const formatLocalDate = (y, m, d) => {
+    return `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+  };
+
   for (let day = 1; day <= daysInMonth; day++) {
     const stats = dayStats[day];
     const date = new Date(year, month - 1, day);
 
     calendarDays.push({
-      date: date.toISOString().split('T')[0],
+      date: formatLocalDate(year, month, day),
       day,
       dayOfWeek: date.getDay(),
       sets: stats?.sets || 0,
