@@ -11,3 +11,4 @@ pnpm-debug.log*
 .claude/
 requirement.md
 claude.md
+.env*.local
