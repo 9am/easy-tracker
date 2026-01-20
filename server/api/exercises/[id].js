@@ -5,7 +5,7 @@ export default async function handler(req, res) {
   const isAuthenticated = await requireAuth(req, res);
   if (!isAuthenticated) return;
 
-  const { id } = req.params;
+  const { id } = req.query;
   const userId = req.user.id;
 
   // Verify ownership through routine

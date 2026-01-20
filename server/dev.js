@@ -98,7 +98,7 @@ async function handleApiRequest(req, res, pathname) {
       method: req.method,
       url: pathname,
       headers: req.headers,
-      query: { ...query, ...req.query },
+      query: { ...query, ...req.query, ...result.params },
       params: result.params,
       body: body ? JSON.parse(body) : undefined,
       cookies: parseCookies(req.headers.cookie)
