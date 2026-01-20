@@ -1,41 +1,6 @@
 import prisma from '../../db/client.js';
 import { requireAuth } from '../../middleware/auth.js';
 
-// Get last set for an exercise
-async function handleLast(req, res, userId) {
-  const { exerciseId } = req.query;
-
-  if (!exerciseId) {
-    return res.status(400).json({ error: 'exerciseId is required' });
-  }
-
-  const exercise = await prisma.exercise.findFirst({
-    where: {
-      id: exerciseId,
-      routine: { userId }
-    }
-  });
-
-  if (!exercise) {
-    return res.status(404).json({ error: 'Exercise not found' });
-  }
-
-  const lastSet = await prisma.set.findFirst({
-    where: { exerciseId, userId },
-    orderBy: { loggedAt: 'desc' }
-  });
-
-  if (!lastSet) {
-    return res.json({ reps: null, note: null });
-  }
-
-  return res.json({
-    reps: lastSet.reps,
-    note: lastSet.note,
-    loggedAt: lastSet.loggedAt
-  });
-}
-
 // Get single set by ID
 async function handleGetById(req, res, userId, id) {
   const set = await prisma.set.findFirst({
@@ -209,15 +174,7 @@ export default async function handler(req, res) {
   if (!isAuthenticated) return;
 
   const userId = req.user.id;
-  const { id, action } = req.query;
-
-  // Handle /sets?action=last
-  if (action === 'last') {
-    if (req.method !== 'GET') {
-      return res.status(405).json({ error: 'Method not allowed' });
-    }
-    return handleLast(req, res, userId);
-  }
+  const { id } = req.query;
 
   // Handle /sets?id=xxx operations
   if (id) {

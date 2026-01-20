@@ -156,18 +156,37 @@ function createRoutineTreeItem(routine) {
   return container;
 }
 
-async function selectExercise(exercise) {
+function selectExercise(exercise) {
   selectedExercise = exercise;
 
-  // Fetch last set data for auto-prefill
-  try {
-    lastSetData = await sets.last(exercise.id);
-  } catch (error) {
-    console.error('Failed to get last set:', error);
-    lastSetData = { reps: null };
-  }
+  // Read last set from localStorage
+  lastSetData = getLastSetData(exercise.id);
 
   showQuickAdd();
+}
+
+function getLastSetData(exerciseId) {
+  try {
+    const stored = localStorage.getItem('lastSets');
+    if (stored) {
+      const lastSets = JSON.parse(stored);
+      return lastSets[exerciseId] || { reps: null };
+    }
+  } catch (error) {
+    console.error('Failed to read last set from localStorage:', error);
+  }
+  return { reps: null };
+}
+
+function saveLastSetData(exerciseId, reps, note = null) {
+  try {
+    const stored = localStorage.getItem('lastSets');
+    const lastSets = stored ? JSON.parse(stored) : {};
+    lastSets[exerciseId] = { reps, note, loggedAt: new Date().toISOString() };
+    localStorage.setItem('lastSets', JSON.stringify(lastSets));
+  } catch (error) {
+    console.error('Failed to save last set to localStorage:', error);
+  }
 }
 
 function showQuickAdd() {
@@ -251,6 +270,9 @@ async function logSet(reps) {
       exerciseId: selectedExercise.id,
       reps
     });
+
+    // Save to localStorage for next time
+    saveLastSetData(selectedExercise.id, reps);
 
     toast(`Logged ${reps} reps`, 'success');
     closeFab();

@@ -135,7 +135,7 @@ export const sets = {
   },
 
   async get(id) {
-    return request(`/sets/${id}`);
+    return request(`/sets?id=${id}`);
   },
 
   async create(data) {
@@ -143,15 +143,11 @@ export const sets = {
   },
 
   async update(id, data) {
-    return request(`/sets/${id}`, { method: 'PUT', body: data });
+    return request(`/sets?id=${id}`, { method: 'PUT', body: data });
   },
 
   async delete(id) {
-    return request(`/sets/${id}`, { method: 'DELETE' });
-  },
-
-  async last(exerciseId) {
-    return request(`/sets/last?exerciseId=${exerciseId}`);
+    return request(`/sets?id=${id}`, { method: 'DELETE' });
   }
 };
 
