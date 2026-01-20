@@ -9,7 +9,7 @@ let routineData = [];
 let selectedExercise = null;
 let lastSetData = null;
 
-export async function initFab() {
+export async function initFab(initialRoutines = null) {
   // Remove existing
   if (fabElement) fabElement.remove();
   if (panelElement) panelElement.remove();
@@ -23,11 +23,15 @@ export async function initFab() {
 
   document.body.appendChild(fabElement);
 
-  // Load routine data
-  try {
-    routineData = await routines.list();
-  } catch (error) {
-    console.error('Failed to load routines:', error);
+  // Use provided routines or fetch
+  if (initialRoutines) {
+    routineData = initialRoutines;
+  } else {
+    try {
+      routineData = await routines.list();
+    } catch (error) {
+      console.error('Failed to load routines:', error);
+    }
   }
 }
 

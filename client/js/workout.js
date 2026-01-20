@@ -16,9 +16,9 @@ async function init() {
   if (!authenticated) return;
 
   initNav();
-  await initFab();
 
   await loadRoutines();
+  await initFab(routineData);
   await loadPredefinedExercises();
 
   setupEventListeners();
