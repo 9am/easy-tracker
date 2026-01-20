@@ -10,6 +10,15 @@ let routineData = [];
 let predefinedExercises = [];
 let editingRoutineId = null;
 let selectedRoutineId = null;
+let isLoading = false;
+
+function setFormLoading(formId, loading) {
+  const form = document.getElementById(formId);
+  if (!form) return;
+  form.querySelectorAll('button, input').forEach(el => {
+    el.disabled = loading;
+  });
+}
 
 async function init() {
   const authenticated = await requireAuth();
@@ -202,8 +211,12 @@ function setupEventListeners() {
   // Routine form
   document.getElementById('routine-form').addEventListener('submit', async (e) => {
     e.preventDefault();
+    if (isLoading) return;
     const name = document.getElementById('routine-name').value.trim();
     if (!name) return;
+
+    isLoading = true;
+    setFormLoading('routine-form', true);
 
     try {
       if (editingRoutineId) {
@@ -220,6 +233,9 @@ function setupEventListeners() {
     } catch (error) {
       console.error('Failed to save routine:', error);
       toast(error.message || 'Failed to save routine', 'error');
+    } finally {
+      isLoading = false;
+      setFormLoading('routine-form', false);
     }
   });
 
@@ -244,8 +260,12 @@ function setupEventListeners() {
   // Custom exercise form
   document.getElementById('custom-exercise-form').addEventListener('submit', async (e) => {
     e.preventDefault();
+    if (isLoading) return;
     const name = document.getElementById('custom-exercise-name').value.trim();
     if (!name) return;
+
+    isLoading = true;
+    setFormLoading('custom-exercise-form', true);
 
     try {
       await exercises.create({
@@ -260,6 +280,9 @@ function setupEventListeners() {
     } catch (error) {
       console.error('Failed to add exercise:', error);
       toast(error.message || 'Failed to add exercise', 'error');
+    } finally {
+      isLoading = false;
+      setFormLoading('custom-exercise-form', false);
     }
   });
 }
@@ -294,6 +317,9 @@ function closeExerciseModal() {
 }
 
 async function addPredefinedExercise(predefinedId) {
+  if (isLoading) return;
+  isLoading = true;
+
   try {
     await exercises.create({
       routineId: selectedRoutineId,
@@ -307,12 +333,16 @@ async function addPredefinedExercise(predefinedId) {
   } catch (error) {
     console.error('Failed to add exercise:', error);
     toast(error.message || 'Failed to add exercise', 'error');
+  } finally {
+    isLoading = false;
   }
 }
 
 async function deleteRoutine(id) {
+  if (isLoading) return;
   if (!await confirm('Delete this routine and all its exercises?')) return;
 
+  isLoading = true;
   try {
     await routines.delete(id);
     toast('Routine deleted', 'success');
@@ -321,12 +351,16 @@ async function deleteRoutine(id) {
   } catch (error) {
     console.error('Failed to delete routine:', error);
     toast('Failed to delete routine', 'error');
+  } finally {
+    isLoading = false;
   }
 }
 
 async function deleteExercise(id) {
+  if (isLoading) return;
   if (!await confirm('Delete this exercise and all its logged sets?')) return;
 
+  isLoading = true;
   try {
     await exercises.delete(id);
     toast('Exercise deleted', 'success');
@@ -335,6 +369,8 @@ async function deleteExercise(id) {
   } catch (error) {
     console.error('Failed to delete exercise:', error);
     toast('Failed to delete exercise', 'error');
+  } finally {
+    isLoading = false;
   }
 }
 

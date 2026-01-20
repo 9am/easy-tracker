@@ -5,6 +5,7 @@ let fabElement = null;
 let panelElement = null;
 let backdropElement = null;
 let isExpanded = false;
+let isLoading = false;
 let routineData = [];
 let selectedExercise = null;
 let lastSetData = null;
@@ -264,7 +265,18 @@ function showQuickAdd() {
   input.focus();
 }
 
+function setButtonsDisabled(disabled) {
+  if (!panelElement) return;
+  panelElement.querySelectorAll('button, input').forEach(el => {
+    el.disabled = disabled;
+  });
+}
+
 async function logSet(reps) {
+  if (isLoading) return;
+  isLoading = true;
+  setButtonsDisabled(true);
+
   try {
     await sets.create({
       exerciseId: selectedExercise.id,
@@ -284,6 +296,9 @@ async function logSet(reps) {
   } catch (error) {
     console.error('Failed to log set:', error);
     toast('Failed to log set', 'error');
+    setButtonsDisabled(false);
+  } finally {
+    isLoading = false;
   }
 }
 

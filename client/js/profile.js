@@ -9,6 +9,7 @@ import { createCalendar } from './components/calendar.js';
 import { createTrendsChart } from './components/chart.js';
 
 let currentTab = 'general';
+let isLoading = false;
 
 async function init() {
   const authenticated = await requireAuth();
@@ -25,7 +26,10 @@ async function init() {
 
   // Logout button
   document.getElementById('logout-btn').addEventListener('click', async () => {
+    if (isLoading) return;
     if (await confirm('Log out?')) {
+      isLoading = true;
+      document.getElementById('logout-btn').disabled = true;
       await logout();
     }
   });
