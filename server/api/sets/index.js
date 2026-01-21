@@ -51,7 +51,11 @@ async function handleUpdateById(req, res, userId, id) {
   }
 
   if (loggedAt !== undefined) {
-    updateData.loggedAt = new Date(loggedAt);
+    const loggedAtDate = new Date(loggedAt);
+    if (loggedAtDate > new Date()) {
+      return res.status(400).json({ error: 'loggedAt cannot be in the future' });
+    }
+    updateData.loggedAt = loggedAtDate;
   }
 
   if (Object.keys(updateData).length === 0) {
@@ -148,13 +152,21 @@ async function handleCreate(req, res, userId) {
     return res.status(404).json({ error: 'Exercise not found' });
   }
 
+  let loggedAtDate = new Date();
+  if (loggedAt) {
+    loggedAtDate = new Date(loggedAt);
+    if (loggedAtDate > new Date()) {
+      return res.status(400).json({ error: 'loggedAt cannot be in the future' });
+    }
+  }
+
   const set = await prisma.set.create({
     data: {
       exerciseId,
       userId,
       reps,
       note: note?.trim() || null,
-      loggedAt: loggedAt ? new Date(loggedAt) : new Date()
+      loggedAt: loggedAtDate
     },
     include: {
       exercise: {

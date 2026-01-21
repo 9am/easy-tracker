@@ -11,18 +11,23 @@
     "build:client": "vite build client",
     "preview": "vite preview client",
     "db:generate": "prisma generate",
+    "db:generate:dev": "prisma generate --schema=prisma/schema.dev.prisma",
     "db:push": "prisma db push",
+    "db:push:dev": "prisma db push --schema=prisma/schema.dev.prisma",
     "db:migrate": "prisma migrate dev",
     "db:seed": "node prisma/seed.js",
+    "db:setup:dev": "pnpm run db:generate:dev && pnpm run db:push:dev && pnpm run db:seed",
     "test": "vitest",
     "test:unit": "vitest run tests/unit",
-    "test:integration": "vitest run tests/integration"
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui"
   },
   "dependencies": {
     "@prisma/client": "^5.10.0",
     "jsonwebtoken": "^9.0.2"
   },
   "devDependencies": {
+    "@playwright/test": "^1.57.0",
     "concurrently": "^8.2.2",
     "dotenv": "^16.4.5",
     "prisma": "^5.10.0",

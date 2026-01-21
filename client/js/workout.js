@@ -4,7 +4,7 @@ import { requireAuth } from './lib/auth.js';
 import { routines, exercises } from './lib/api.js';
 import { toast, icons, getExerciseName, getMuscleGroup, confirm, getExerciseIcon } from './lib/utils.js';
 import { initNav } from './components/nav.js';
-import { initFab, refreshFab } from './components/fab.js';
+import { initFab, refreshFab, openQuickAddForExercise } from './components/fab.js';
 
 let routineData = [];
 let predefinedExercises = [];
@@ -156,6 +156,26 @@ function renderRoutines() {
     btn.addEventListener('click', (e) => {
       e.stopPropagation();
       deleteExercise(btn.dataset.id);
+    });
+  });
+
+  // Log set by clicking on exercise info
+  container.querySelectorAll('.exercise-info').forEach(info => {
+    info.style.cursor = 'pointer';
+    info.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const exerciseItem = info.closest('.exercise-item');
+      const exerciseId = exerciseItem?.dataset.id;
+      if (!exerciseId) return;
+
+      // Find the exercise in routineData
+      for (const routine of routineData) {
+        const exercise = routine.exercises.find(ex => ex.id === exerciseId);
+        if (exercise) {
+          openQuickAddForExercise(exercise);
+          return;
+        }
+      }
     });
   });
 }

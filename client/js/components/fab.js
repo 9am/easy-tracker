@@ -9,6 +9,18 @@ let isLoading = false;
 let routineData = [];
 let selectedExercise = null;
 let lastSetData = null;
+let selectedLoggedAt = null;
+let datetimePickerActive = false;
+
+function formatDateTimeLocal(date) {
+  const d = new Date(date);
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  const hours = String(d.getHours()).padStart(2, '0');
+  const minutes = String(d.getMinutes()).padStart(2, '0');
+  return `${year}-${month}-${day}T${hours}:${minutes}`;
+}
 
 export async function initFab(initialRoutines = null) {
   // Remove existing
@@ -49,6 +61,7 @@ function openFab() {
   fabElement.classList.add('expanded');
   selectedExercise = null;
   lastSetData = null;
+  selectedLoggedAt = null;
 
   // Check if there's only one exercise - go directly to quick add
   const allExercises = routineData.flatMap(r => r.exercises);
@@ -202,7 +215,14 @@ function showQuickAdd() {
   // Create backdrop
   backdropElement = document.createElement('div');
   backdropElement.className = 'fab-backdrop';
-  backdropElement.addEventListener('click', closeFab);
+  backdropElement.addEventListener('click', () => {
+    // Don't close if datetime picker is active
+    if (datetimePickerActive) {
+      datetimePickerActive = false;
+      return;
+    }
+    closeFab();
+  });
   document.body.appendChild(backdropElement);
 
   // Create quick add panel
@@ -214,6 +234,9 @@ function showQuickAdd() {
 
   const exerciseName = getExerciseName(selectedExercise);
   const lastReps = lastSetData?.reps;
+
+  const now = new Date();
+  const nowFormatted = formatDateTimeLocal(now);
 
   quickAdd.innerHTML = `
     <div class="quick-add-title">Log set</div>
@@ -228,6 +251,10 @@ function showQuickAdd() {
     <div class="quick-add-custom">
       <input type="number" class="quick-add-input" placeholder="Custom reps" min="0">
       <button class="btn btn-primary btn-sm quick-add-submit">Add</button>
+    </div>
+    <div class="quick-add-datetime">
+      <label class="quick-add-datetime-label">Date/Time</label>
+      <input type="datetime-local" class="quick-add-datetime-input" value="${nowFormatted}" max="${nowFormatted}">
     </div>
   `;
 
@@ -258,6 +285,12 @@ function showQuickAdd() {
     }
   });
 
+  // Track datetime picker interactions to prevent accidental backdrop closes
+  const datetimeInput = quickAdd.querySelector('.quick-add-datetime-input');
+  datetimeInput.addEventListener('focus', () => {
+    datetimePickerActive = true;
+  });
+
   panelElement.appendChild(quickAdd);
   document.body.appendChild(panelElement);
 
@@ -277,10 +310,15 @@ async function logSet(reps) {
   isLoading = true;
   setButtonsDisabled(true);
 
+  // Get datetime from input
+  const datetimeInput = panelElement?.querySelector('.quick-add-datetime-input');
+  const loggedAt = datetimeInput?.value ? new Date(datetimeInput.value).toISOString() : undefined;
+
   try {
     await sets.create({
       exerciseId: selectedExercise.id,
-      reps
+      reps,
+      loggedAt
     });
 
     // Save to localStorage for next time
@@ -310,4 +348,13 @@ export async function refreshFab() {
   }
 }
 
-export default { initFab, refreshFab };
+export function openQuickAddForExercise(exercise) {
+  isExpanded = true;
+  fabElement?.classList.add('expanded');
+  selectedExercise = exercise;
+  lastSetData = getLastSetData(exercise.id);
+  datetimePickerActive = false;
+  showQuickAdd();
+}
+
+export default { initFab, refreshFab, openQuickAddForExercise };

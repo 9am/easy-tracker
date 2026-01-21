@@ -150,17 +150,52 @@ async function handleCalendar(req, res, userId) {
       userId,
       loggedAt: { gte: startOfMonth, lte: endOfMonth }
     },
-    select: { reps: true, loggedAt: true }
+    include: {
+      exercise: {
+        include: {
+          routine: true,
+          predefinedExercise: { include: { muscleGroup: true } }
+        }
+      }
+    },
+    orderBy: { loggedAt: 'asc' }
   });
 
   const dayStats = {};
   for (const set of sets) {
     const day = set.loggedAt.getDate();
     if (!dayStats[day]) {
-      dayStats[day] = { sets: 0, reps: 0 };
+      dayStats[day] = { sets: 0, reps: 0, routines: {} };
     }
     dayStats[day].sets++;
     dayStats[day].reps += set.reps;
+
+    const routineName = set.exercise.routine?.name || 'Unknown';
+    const routineId = set.exercise.routine?.id || 'unknown';
+    const exerciseName = set.exercise.predefinedExercise?.name || set.exercise.customName;
+
+    if (!dayStats[day].routines[routineId]) {
+      dayStats[day].routines[routineId] = {
+        name: routineName,
+        exercises: {},
+        totalSets: 0,
+        totalReps: 0
+      };
+    }
+
+    if (!dayStats[day].routines[routineId].exercises[exerciseName]) {
+      dayStats[day].routines[routineId].exercises[exerciseName] = {
+        name: exerciseName,
+        muscleGroup: set.exercise.predefinedExercise?.muscleGroup?.name || 'Custom',
+        sets: 0,
+        reps: 0
+      };
+    }
+
+    dayStats[day].routines[routineId].exercises[exerciseName].sets++;
+    dayStats[day].routines[routineId].exercises[exerciseName].reps += set.reps;
+    dayStats[day].routines[routineId].totalSets++;
+    dayStats[day].routines[routineId].totalReps += set.reps;
   }
 
   const maxDayReps = Math.max(...Object.values(dayStats).map(d => d.reps), 1);
@@ -175,13 +210,21 @@ async function handleCalendar(req, res, userId) {
     const stats = dayStats[day];
     const date = new Date(year, month - 1, day);
 
+    const routines = stats
+      ? Object.values(stats.routines).map(r => ({
+          ...r,
+          exercises: Object.values(r.exercises)
+        }))
+      : [];
+
     calendarDays.push({
       date: formatLocalDate(year, month, day),
       day,
       dayOfWeek: date.getDay(),
       sets: stats?.sets || 0,
       reps: stats?.reps || 0,
-      intensity: stats ? Math.ceil((stats.reps / maxDayReps) * 4) : 0
+      intensity: stats ? Math.ceil((stats.reps / maxDayReps) * 4) : 0,
+      routines
     });
   }
 

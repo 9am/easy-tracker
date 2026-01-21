@@ -36,10 +36,16 @@ export function createTrendsChart(container) {
             <button class="chart-control" data-granularity="month">Month</button>
           </div>
         </div>
+        <div id="chart-svg-container">
+          <div class="text-center p-4">
+            <div class="spinner" style="margin: 0 auto;"></div>
+          </div>
+        </div>
+        <div id="chart-legend" class="chart-legend"></div>
         <div class="chart-routine-selector">
           <label class="chart-radio">
             <input type="radio" name="routine" value="" ${!selectedRoutineId ? 'checked' : ''}>
-            <span>All Routines</span>
+            <span>All</span>
           </label>
           ${routineList.map(r => `
             <label class="chart-radio">
@@ -48,12 +54,6 @@ export function createTrendsChart(container) {
             </label>
           `).join('')}
         </div>
-        <div id="chart-svg-container">
-          <div class="text-center p-4">
-            <div class="spinner" style="margin: 0 auto;"></div>
-          </div>
-        </div>
-        <div id="chart-legend" class="chart-legend"></div>
       </div>
     `;
 
