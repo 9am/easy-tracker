@@ -19,6 +19,10 @@ export function createNav() {
     link.href = item.href;
     link.className = `nav-item${isActive ? ' active' : ''}`;
 
+    if (isActive) {
+      link.addEventListener('click', (e) => e.preventDefault());
+    }
+
     const iconWrapper = document.createElement('span');
     iconWrapper.className = 'nav-icon';
     iconWrapper.innerHTML = item.icon;
