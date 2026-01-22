@@ -8,7 +8,7 @@ test.describe('Set Logging Workflow', () => {
     await page.waitForURL(/workout/);
   });
 
-  test.skip('should open FAB and show routine tree', async ({ page }) => {
+  test('should open FAB and show routine tree', async ({ page }) => {
     // Click FAB button
     await page.locator('.fab').click();
 
@@ -17,10 +17,10 @@ test.describe('Set Logging Workflow', () => {
     await expect(fabPanel).toBeVisible();
 
     // Should see routine headers
-    await expect(page.locator('.fab-routine')).toBeVisible();
+    await expect(page.locator('.fab-routine').first()).toBeVisible();
   });
 
-  test.skip('should log set using quick add buttons via FAB', async ({ page }) => {
+  test('should log set using quick add buttons via FAB', async ({ page }) => {
     // Click FAB
     await page.locator('.fab').click();
 
@@ -35,7 +35,7 @@ test.describe('Set Logging Workflow', () => {
     await expect(quickAdd).toBeVisible();
 
     // Should see quick add buttons
-    await expect(page.locator('.quick-add-btn')).toBeVisible();
+    await expect(page.locator('.quick-add-btn').first()).toBeVisible();
 
     // Click +10 button
     await page.locator('.quick-add-btn[data-reps="10"]').click();
@@ -109,7 +109,7 @@ test.describe('Set Logging Workflow', () => {
     await expect(page.locator('.toast')).toContainText(/logged.*5.*reps/i);
   });
 
-  test.skip('should show last logged reps for exercise', async ({ page }) => {
+  test('should show last logged reps for exercise', async ({ page }) => {
     // Log a set first
     await page.locator('.fab').click();
     await page.locator('.fab-routine-header').first().click();
@@ -127,8 +127,8 @@ test.describe('Set Logging Workflow', () => {
     // Should see "Last: 15 reps" text
     await expect(page.locator('.quick-add-last')).toContainText(/last.*15/i);
 
-    // Should have quick button to repeat last reps
-    await expect(page.locator('.quick-add-btn[data-reps="15"]')).toBeVisible();
+    // Should have quick button to repeat last reps (the =15 button)
+    await expect(page.getByRole('button', { name: '=15' })).toBeVisible();
   });
 
   test('should close FAB when clicking backdrop', async ({ page }) => {

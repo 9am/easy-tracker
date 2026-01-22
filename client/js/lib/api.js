@@ -1,6 +1,29 @@
 // API Client
 const API_BASE = '/api';
 
+// Loading overlay management
+let loadingOverlay = null;
+let activeRequests = 0;
+
+function showLoadingOverlay() {
+  activeRequests++;
+  if (activeRequests === 1) {
+    if (!loadingOverlay) {
+      loadingOverlay = document.createElement('div');
+      loadingOverlay.className = 'loading-overlay';
+      loadingOverlay.innerHTML = '<div class="loading-spinner"></div>';
+    }
+    document.body.appendChild(loadingOverlay);
+  }
+}
+
+function hideLoadingOverlay() {
+  activeRequests = Math.max(0, activeRequests - 1);
+  if (activeRequests === 0 && loadingOverlay && loadingOverlay.parentNode) {
+    loadingOverlay.remove();
+  }
+}
+
 class ApiError extends Error {
   constructor(message, status, data) {
     super(message);
@@ -12,6 +35,8 @@ class ApiError extends Error {
 
 async function request(endpoint, options = {}) {
   const url = `${API_BASE}${endpoint}`;
+  const method = options.method || 'GET';
+  const isMutating = ['POST', 'PUT', 'DELETE'].includes(method.toUpperCase());
 
   const config = {
     ...options,
@@ -24,6 +49,11 @@ async function request(endpoint, options = {}) {
 
   if (options.body && typeof options.body === 'object') {
     config.body = JSON.stringify(options.body);
+  }
+
+  // Show loading overlay for mutating requests
+  if (isMutating) {
+    showLoadingOverlay();
   }
 
   try {
@@ -48,6 +78,11 @@ async function request(endpoint, options = {}) {
   } catch (error) {
     if (error instanceof ApiError) throw error;
     throw new ApiError('Network error', 0, { message: error.message });
+  } finally {
+    // Hide loading overlay
+    if (isMutating) {
+      hideLoadingOverlay();
+    }
   }
 }
 

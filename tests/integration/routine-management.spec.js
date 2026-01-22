@@ -18,7 +18,7 @@ test.describe('Routine Management Workflow', () => {
     await expect(routineCards.first()).toBeVisible();
   });
 
-  test.skip('should create a new routine', async ({ page }) => {
+  test('should create a new routine', async ({ page }) => {
     const uniqueName = `Test Routine ${Date.now()}`;
 
     // Click add routine button
@@ -38,7 +38,7 @@ test.describe('Routine Management Workflow', () => {
     await expect(modal).toHaveClass(/hidden/);
 
     // New routine should appear in the list
-    await expect(page.locator('.routine-card')).toContainText(uniqueName);
+    await expect(page.locator('#routines-container')).toContainText(uniqueName);
   });
 
   test('should expand routine to show exercises', async ({ page }) => {
@@ -55,13 +55,21 @@ test.describe('Routine Management Workflow', () => {
     await expect(routineBody).toBeVisible();
   });
 
-  test.skip('should add predefined exercise to routine', async ({ page }) => {
-    // Expand first routine
-    await page.locator('.routine-header').first().click();
-    await page.waitForTimeout(200);
+  test('should add predefined exercise to routine', async ({ page }) => {
+    // Create a fresh routine for this test to avoid conflicts with previous exercises
+    const routineName = `Test Routine ${Date.now()}`;
+    await page.locator('#add-routine-btn').click();
+    await page.locator('#routine-name').fill(routineName);
+    await page.locator('#routine-form button[type="submit"]').click();
+    await expect(page.locator('#routine-modal')).toHaveClass(/hidden/);
+
+    // Find and expand the new routine
+    const newRoutine = page.locator('#routines-container .routine-card').filter({ hasText: routineName });
+    await newRoutine.locator('.routine-header').click();
+    await expect(newRoutine).toHaveClass(/expanded/);
 
     // Click add exercise button
-    await page.locator('.add-exercise-btn').first().click();
+    await newRoutine.locator('.add-exercise-btn').click();
 
     // Exercise modal should appear
     const modal = page.locator('#exercise-modal');
@@ -71,25 +79,29 @@ test.describe('Routine Management Workflow', () => {
     const muscleGroups = page.locator('#muscle-groups-list');
     await expect(muscleGroups).toBeVisible();
 
-    // Expand a muscle group and click on an exercise
-    const muscleGroupHeader = muscleGroups.locator('[data-expand]').first();
-    await muscleGroupHeader.click();
-    await page.waitForTimeout(200);
+    // Expand Shoulders muscle group
+    const shouldersGroup = muscleGroups.locator('.routine-card').filter({ hasText: 'Shoulders' });
+    await shouldersGroup.locator('[data-expand]').click();
+    await expect(shouldersGroup).toHaveClass(/expanded/, { timeout: 5000 });
 
-    // Click on a predefined exercise
-    const predefinedExercise = muscleGroups.locator('.predefined-exercise').first();
-    const exerciseName = await predefinedExercise.locator('.exercise-name').textContent();
-    await predefinedExercise.click();
+    // Wait for the routine-body to be visible within expanded group
+    const exerciseList = shouldersGroup.locator('.routine-body');
+    await expect(exerciseList).toBeVisible();
 
-    // Modal should close
-    await expect(modal).toHaveClass(/hidden/);
+    // Click on Front Raise
+    const frontRaiseExercise = exerciseList.locator('.predefined-exercise', { hasText: 'Front Raise' });
+    await expect(frontRaiseExercise).toBeVisible();
+    const exerciseName = 'Front Raise';
+    await frontRaiseExercise.click();
+
+    // Wait for modal to close (has hidden class)
+    await expect(modal).toHaveClass(/hidden/, { timeout: 10000 });
 
     // Exercise should appear in the routine
-    const routineCard = page.locator('.routine-card.expanded').first();
-    await expect(routineCard.locator('.exercise-item')).toContainText(exerciseName);
+    await expect(newRoutine).toContainText(exerciseName);
   });
 
-  test.skip('should add custom exercise to routine', async ({ page }) => {
+  test('should add custom exercise to routine', async ({ page }) => {
     const customExerciseName = `Custom Exercise ${Date.now()}`;
 
     // Expand first routine
@@ -107,15 +119,15 @@ test.describe('Routine Management Workflow', () => {
     // Submit
     await page.locator('#custom-exercise-form button[type="submit"]').click();
 
-    // Modal should close
-    await expect(page.locator('.modal-overlay')).not.toBeVisible();
+    // Modal should close (has hidden class)
+    await expect(page.locator('#exercise-modal')).toHaveClass(/hidden/, { timeout: 10000 });
 
     // Custom exercise should appear in the routine
     const routineCard = page.locator('.routine-card.expanded').first();
-    await expect(routineCard.locator('.exercise-item')).toContainText(customExerciseName);
+    await expect(routineCard).toContainText(customExerciseName);
   });
 
-  test.skip('should edit routine name', async ({ page }) => {
+  test('should edit routine name', async ({ page }) => {
     const newName = `Edited Routine ${Date.now()}`;
 
     // Expand first routine
@@ -125,8 +137,8 @@ test.describe('Routine Management Workflow', () => {
     await page.locator('.edit-routine-btn').first().click();
 
     // Modal should appear with current name
-    const modal = page.locator('.modal-overlay');
-    await expect(modal).toBeVisible();
+    const modal = page.locator('#routine-modal');
+    await expect(modal).not.toHaveClass(/hidden/);
 
     // Clear and enter new name
     await page.locator('#routine-name').clear();
@@ -135,12 +147,14 @@ test.describe('Routine Management Workflow', () => {
     // Save
     await page.getByRole('button', { name: /save|update/i }).click();
 
-    // Modal should close and name should be updated
-    await expect(modal).not.toBeVisible();
+    // Modal should close (has hidden class)
+    await expect(modal).toHaveClass(/hidden/, { timeout: 10000 });
+
+    // Name should be updated
     await expect(page.locator('.routine-card').first()).toContainText(newName);
   });
 
-  test.skip('should delete exercise from routine', async ({ page }) => {
+  test('should delete exercise from routine', async ({ page }) => {
     // Expand first routine
     await page.locator('.routine-header').first().click();
 
@@ -149,15 +163,13 @@ test.describe('Routine Management Workflow', () => {
 
     if (exercisesBefore > 0) {
       // Click delete on first exercise
-      page.on('dialog', dialog => dialog.accept()); // Accept confirmation
       await page.locator('.delete-exercise').first().click();
 
-      // Wait for deletion
-      await page.waitForTimeout(500);
+      // Confirm deletion in custom confirm dialog
+      await page.locator('.confirm-overlay [data-action="confirm"]').click();
 
-      // Exercise count should decrease
-      const exercisesAfter = await page.locator('.routine-card.expanded .exercise-item').count();
-      expect(exercisesAfter).toBeLessThan(exercisesBefore);
+      // Wait for the exercise to be removed from DOM
+      await expect(page.locator('.routine-card.expanded .exercise-item')).toHaveCount(exercisesBefore - 1, { timeout: 10000 });
     }
   });
 
