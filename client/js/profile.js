@@ -1,5 +1,3 @@
-import '../css/base.css';
-import '../css/components.css';
 import { requireAuth, getUser, logout } from './lib/auth.js';
 import { stats } from './lib/api.js';
 import { toast, formatDate, confirm } from './lib/utils.js';
@@ -8,7 +6,7 @@ import { initFab } from './components/fab.js';
 import { createCalendar } from './components/calendar.js';
 import { createTrendsChart } from './components/chart.js';
 
-let currentTab = 'general';
+let currentTab = 'calendar';
 let isLoading = false;
 
 async function init() {
@@ -22,7 +20,7 @@ async function init() {
   await initFab();
 
   setupTabs();
-  loadTab('general');
+  loadTab('calendar');
 
   // Logout button
   document.getElementById('logout-btn').addEventListener('click', async () => {

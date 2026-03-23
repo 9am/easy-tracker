@@ -1,5 +1,3 @@
-import '../css/base.css';
-import '../css/components.css';
 import { checkAuth, login, devLogin } from './lib/auth.js';
 import { toast } from './lib/utils.js';
 

@@ -64,27 +64,11 @@
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
-    --color-bg: #1c1917;
-    --color-surface: #292524;
-    --color-text: #fafaf9;
-    --color-text-muted: #a8a29e;
-    --color-border: #44403c;
-    --color-primary: #fafaf9;
-    --color-primary-hover: #e7e5e4;
-    --color-primary-text: #1c1917;
-    --color-accent: #38bdf8;
-    --color-accent-light: #0c4a6e;
-    --color-success: #4ade80;
-    --color-success-light: #14532d;
-    --color-success-text: #1c1917;
-    --color-error: #f87171;
-    --color-error-light: #7f1d1d;
-    --color-error-text: #1c1917;
-    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
-    --shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
-    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4);
-    --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.4);
+  html {
+    filter: invert(1) hue-rotate(180deg);
+  }
+  img, video, svg, [style*="background-image"] {
+    filter: invert(1) hue-rotate(180deg);
   }
 }
 
@@ -500,3 +484,4 @@ a:hover {
     max-height: 80vh;
   }
 }
+

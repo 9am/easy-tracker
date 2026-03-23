@@ -1,5 +1,3 @@
-import '../css/base.css';
-import '../css/components.css';
 import { requireAuth } from './lib/auth.js';
 import { routines, exercises } from './lib/api.js';
 import { toast, icons, getExerciseName, getMuscleGroup, confirm, getExerciseIcon } from './lib/utils.js';
