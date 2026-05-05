@@ -484,6 +484,39 @@
   overflow: hidden;
 }
 
+.calendar-legend {
+  padding: var(--space-3) var(--space-4);
+  border-top: 1px solid var(--color-border);
+}
+
+.calendar-legend:empty {
+  display: none;
+}
+
+.calendar-legend-items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-4);
+}
+
+.calendar-legend-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.calendar-legend-swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.calendar-legend-label {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+
 .calendar-filter {
   padding: var(--space-3) var(--space-4);
   border-top: 1px solid var(--color-border);
@@ -568,34 +601,52 @@
 
 .calendar-day {
   aspect-ratio: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: var(--font-size-sm);
+  position: relative;
+  overflow: hidden;
   border-radius: var(--radius-sm);
   cursor: pointer;
   transition: all var(--transition);
 }
 
-.calendar-day:hover {
-  background: var(--color-bg);
+.calendar-day:hover::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.08);
+  pointer-events: none;
+}
+
+.calendar-day-strips {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.calendar-day-strip {
+  flex: 1;
+}
+
+.calendar-day-num {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-sm);
 }
 
 .calendar-day.empty {
   cursor: default;
 }
 
-.calendar-day.today {
+.calendar-day.today .calendar-day-num {
   font-weight: 600;
-  border: 1px solid var(--color-primary);
 }
 
-/* Intensity colors (GitHub contribution style) */
-.calendar-day.intensity-0 { background: transparent; }
-.calendar-day.intensity-1 { background: #dcfce7; }
-.calendar-day.intensity-2 { background: #86efac; }
-.calendar-day.intensity-3 { background: #22c55e; color: white; }
-.calendar-day.intensity-4 { background: #15803d; color: white; }
+.calendar-day.today {
+  border: 1px solid var(--color-primary);
+}
 
 /* Day Detail Modal */
 .day-detail-summary {

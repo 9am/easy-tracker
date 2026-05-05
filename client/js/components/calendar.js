@@ -5,6 +5,24 @@ const WEEKDAYS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June',
   'July', 'August', 'September', 'October', 'November', 'December'];
 
+const EXERCISE_COLORS = [
+  '#4ade80', '#fb923c', '#60a5fa', '#f472b6', '#a78bfa',
+  '#34d399', '#fbbf24', '#f87171', '#38bdf8', '#a3e635',
+  '#e879f9', '#2dd4bf',
+];
+
+function hashString(str) {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = (hash * 31 + str.charCodeAt(i)) & 0xffffffff;
+  }
+  return Math.abs(hash);
+}
+
+function getExerciseColor(name) {
+  return EXERCISE_COLORS[hashString(name) % EXERCISE_COLORS.length];
+}
+
 function showDayDetail(dayData) {
   const overlay = document.createElement('div');
   overlay.className = 'modal-overlay';
@@ -104,6 +122,7 @@ export function createCalendar(container, onDayClick) {
           <div id="calendar-days" style="display: contents;"></div>
         </div>
         <div class="p-4" id="calendar-summary"></div>
+        <div class="calendar-legend" id="calendar-legend"></div>
         <div class="calendar-filter" id="calendar-filter"></div>
       </div>
     `;
@@ -133,6 +152,7 @@ export function createCalendar(container, onDayClick) {
   async function loadData() {
     const daysContainer = container.querySelector('#calendar-days');
     const summaryContainer = container.querySelector('#calendar-summary');
+    const legendContainer = container.querySelector('#calendar-legend');
     const filterContainer = container.querySelector('#calendar-filter');
     const titleEl = container.querySelector('.calendar-title');
 
@@ -155,7 +175,7 @@ export function createCalendar(container, onDayClick) {
       renderFilter(filterContainer);
 
       // Render calendar with current filter
-      renderCalendarDays(daysContainer, summaryContainer);
+      renderCalendarDays(daysContainer, summaryContainer, legendContainer);
     } catch (error) {
       console.error('Failed to load calendar:', error);
       daysContainer.innerHTML = '<div class="empty-state">Failed to load</div>';
@@ -189,21 +209,20 @@ export function createCalendar(container, onDayClick) {
         selectedRoutineId = e.target.value;
         const daysContainer = container.querySelector('#calendar-days');
         const summaryContainer = container.querySelector('#calendar-summary');
-        renderCalendarDays(daysContainer, summaryContainer);
+        const legendContainer = container.querySelector('#calendar-legend');
+        renderCalendarDays(daysContainer, summaryContainer, legendContainer);
       });
     });
   }
 
-  function renderCalendarDays(daysContainer, summaryContainer) {
+  function renderCalendarDays(daysContainer, summaryContainer, legendContainer) {
     // Cache filtered days data keyed by date
     cachedDays = {};
     for (const day of rawDays) {
       cachedDays[day.date] = getFilteredDayData(day);
     }
 
-    // Calculate max reps for intensity scaling (based on filtered data)
     const filteredDays = Object.values(cachedDays);
-    const maxDayReps = Math.max(...filteredDays.map(d => d.reps), 1);
 
     // Render days
     const firstDay = new Date(year, month - 1, 1).getDay();
@@ -220,11 +239,29 @@ export function createCalendar(container, onDayClick) {
     // Days of month
     for (const day of filteredDays) {
       const isToday = isCurrentMonth && day.day === today.getDate();
-      const intensity = day.reps > 0 ? Math.ceil((day.reps / maxDayReps) * 4) : 0;
-      const classes = ['calendar-day', `intensity-${intensity}`];
+      const classes = ['calendar-day'];
       if (isToday) classes.push('today');
 
-      html += `<div class="${classes.join(' ')}" data-date="${day.date}" title="${day.reps} reps">${day.day}</div>`;
+      // Collect unique exercises for this day (in order across routines)
+      const seen = new Set();
+      const exercises = [];
+      for (const routine of day.routines) {
+        for (const ex of routine.exercises) {
+          if (!seen.has(ex.name)) {
+            seen.add(ex.name);
+            exercises.push(ex);
+          }
+        }
+      }
+
+      const strips = exercises.map(ex =>
+        `<div class="calendar-day-strip" style="background:${getExerciseColor(ex.name)};"></div>`
+      ).join('');
+
+      html += `<div class="${classes.join(' ')}" data-date="${day.date}" title="${day.reps} reps">
+        ${strips ? `<div class="calendar-day-strips">${strips}</div>` : ''}
+        <span class="calendar-day-num">${day.day}</span>
+      </div>`;
     }
 
     daysContainer.innerHTML = html;
@@ -259,6 +296,38 @@ export function createCalendar(container, onDayClick) {
         <span class="font-medium">${avgReps}</span>
       </div>
     `;
+
+    // Build legend from all unique exercises in the filtered days
+    if (legendContainer) {
+      const legendSeen = new Set();
+      const legendExercises = [];
+      for (const day of filteredDays) {
+        for (const routine of day.routines) {
+          for (const ex of routine.exercises) {
+            if (!legendSeen.has(ex.name)) {
+              legendSeen.add(ex.name);
+              legendExercises.push(ex.name);
+            }
+          }
+        }
+      }
+      legendExercises.sort();
+
+      if (legendExercises.length === 0) {
+        legendContainer.innerHTML = '';
+      } else {
+        legendContainer.innerHTML = `
+          <div class="calendar-legend-items">
+            ${legendExercises.map(name => `
+              <div class="calendar-legend-item">
+                <span class="calendar-legend-swatch" style="background:${getExerciseColor(name)};"></span>
+                <span class="calendar-legend-label">${name}</span>
+              </div>
+            `).join('')}
+          </div>
+        `;
+      }
+    }
   }
 
   render();

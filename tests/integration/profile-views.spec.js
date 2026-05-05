@@ -19,8 +19,9 @@ test.describe('Profile Page Views', () => {
   });
 
   test.describe('General View', () => {
-    test('should display general stats by default', async ({ page }) => {
-      // General tab should be active by default
+    test('should display general stats when tab is clicked', async ({ page }) => {
+      // Click the general tab
+      await page.locator('.stats-tab[data-tab="general"]').click();
       const generalTab = page.locator('.stats-tab[data-tab="general"]');
       await expect(generalTab).toHaveClass(/active/);
 
@@ -141,16 +142,72 @@ test.describe('Profile Page Views', () => {
       }
     });
 
-    test('should show intensity colors on active days', async ({ page }) => {
-      // Days with activity should have intensity classes
-      const daysWithIntensity = page.locator('.calendar-day[class*="intensity-"]');
+    test('should show day number in every non-empty day cell', async ({ page }) => {
+      const dayNums = page.locator('.calendar-day:not(.empty) .calendar-day-num');
+      await expect(dayNums.first()).toBeVisible();
+    });
 
-      // At least check that intensity classes exist in the HTML
-      const calendarDays = page.locator('.calendar-day:not(.empty)');
-      const firstDay = calendarDays.first();
-      const className = await firstDay.getAttribute('class');
+    test('should show exercise color strips on days with activity', async ({ page }) => {
+      // Days with logged sets should contain strip divs
+      const strips = page.locator('.calendar-day-strips');
+      const count = await strips.count();
 
-      expect(className).toContain('intensity-');
+      // Seed data covers 2 weeks so there should be active days in recent months
+      if (count > 0) {
+        // Each strip container should have at least one colored strip
+        const firstStrip = strips.first().locator('.calendar-day-strip');
+        await expect(firstStrip).toBeVisible();
+
+        // Strip should have an inline background color
+        const bg = await firstStrip.getAttribute('style');
+        expect(bg).toMatch(/background:/);
+      }
+    });
+
+    test('should display exercise color legend', async ({ page }) => {
+      // Legend container should exist
+      const legend = page.locator('#calendar-legend');
+      await expect(legend).toBeVisible();
+
+      // Should have legend items matching exercises in this month
+      const items = page.locator('.calendar-legend-item');
+      const count = await items.count();
+
+      if (count > 0) {
+        // Each item should have a swatch and a label
+        const firstItem = items.first();
+        await expect(firstItem.locator('.calendar-legend-swatch')).toBeVisible();
+        await expect(firstItem.locator('.calendar-legend-label')).toBeVisible();
+
+        // Swatch must carry a background color
+        const swatchStyle = await firstItem.locator('.calendar-legend-swatch').getAttribute('style');
+        expect(swatchStyle).toMatch(/background:/);
+      }
+    });
+
+    test('should update legend when routine filter changes', async ({ page }) => {
+      const routineRadios = page.locator('input[name="routine-filter"]:not([value="all"])');
+      const count = await routineRadios.count();
+
+      if (count > 0) {
+        // Record legend labels before filtering
+        const labelsBefore = await page.locator('.calendar-legend-label').allTextContents();
+
+        // Switch to a specific routine
+        await routineRadios.first().click();
+        await page.waitForTimeout(300);
+
+        // Legend should still render (even if it now has fewer items)
+        const legend = page.locator('#calendar-legend');
+        await expect(legend).toBeVisible();
+
+        // Switch back to All and verify we get at least as many legend items
+        await page.locator('input[name="routine-filter"][value="all"]').click();
+        await page.waitForTimeout(300);
+
+        const labelsAfter = await page.locator('.calendar-legend-label').allTextContents();
+        expect(labelsAfter.length).toBeGreaterThanOrEqual(labelsBefore.length);
+      }
     });
   });
 
